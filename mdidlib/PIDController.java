@@ -14,8 +14,16 @@ public class PIDController {
     double integralSum = 0;
     double maxIntegral;
 
-    ElapsedTime timer = new ElapsedTime();
+    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private double lastError = 0;
+
+    public PIDController(double p, double i, double d) {
+        kP = p;
+        kI = i;
+        kD = d;
+
+        timer.reset();
+    }
 
     public PIDController(double p, double i, double d, DcMotor motor, double maxIntegralSum) {
         controlledMotor = motor;
@@ -34,17 +42,20 @@ public class PIDController {
         return coefficients;
     }
 
-    public double control(double reference, double state) {
+    public double update(double reference, double state) {
         double error = reference - state;
 
         double P = kP * error;
 
         double I = kI * (error * timer.time());
         integralSum += I;
-        if (integralSum > maxIntegral) {
-            integralSum = maxIntegral;
-        } else if (integralSum < -maxIntegral) {
-            integralSum = -maxIntegral;
+
+        if (maxIntegral > 0) {
+            if (integralSum > maxIntegral) {
+                integralSum = maxIntegral;
+            } else if (integralSum < -maxIntegral) {
+                integralSum = -maxIntegral;
+            }
         }
 
         double D = kD * ( (error - lastError) / (timer.time()) );

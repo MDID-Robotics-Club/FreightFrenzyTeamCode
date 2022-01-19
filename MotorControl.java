@@ -17,14 +17,16 @@ public class MotorControl {
     DcMotor extensionMotor;
 
     Servo cargoMotor;
+    Servo carouselMotor;
 
     boolean allowIntake;
 
     private int armTargetPosition = 0;
     private double cargoLoaderPosition = 0;
 
-    PIDController liftPID;
+    private double carouselPosition = 0;
 
+    PIDController liftPID;
 
     public MotorControl(Robot robot) {
         drivenRobot = robot;
@@ -34,6 +36,12 @@ public class MotorControl {
         liftMotor = robot.lift;
         cargoMotor = robot.cargo;
         extensionMotor = robot.extension;
+        carouselMotor = robot.carousel;
+
+        swivelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
         cargoLoaderPosition = -1.0;
         cargoMotor.setPosition(cargoLoaderPosition);
@@ -74,7 +82,7 @@ public class MotorControl {
         liftMotor.setPower(0);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
-        liftMotor.setPower(liftPID.control(armTargetPosition, liftMotor.getCurrentPosition()));
+        liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
 
     public void lowerArm(boolean dPad) {
@@ -88,7 +96,7 @@ public class MotorControl {
         liftMotor.setPower(0);
         liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
-        liftMotor.setPower(liftPID.control(armTargetPosition, liftMotor.getCurrentPosition()));
+        liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
 
     public void autoArm() {
@@ -124,5 +132,13 @@ public class MotorControl {
             cargoLoaderPosition += 0.2;
         }
         cargoMotor.setPosition(Range.clip(cargoLoaderPosition, -1.0, 1.0));
+    }
+
+    public void spinCarousel(double power) {
+        carouselPosition = carouselMotor.getPosition();
+        double changeInPosition = Range.clip(power, -3.0, 3.0);
+        carouselPosition += changeInPosition;
+
+        carouselMotor.setPosition(carouselPosition);
     }
 }

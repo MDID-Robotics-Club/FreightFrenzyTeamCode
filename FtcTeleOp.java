@@ -43,7 +43,7 @@ public class FtcTeleOp extends LinearOpMode {
 //    FtcDashboard dashboard;
 
     @Override
-    public void runOpMode() {
+    public void runOpMode() throws InterruptedException {
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -115,7 +115,6 @@ public class FtcTeleOp extends LinearOpMode {
 
                 // Right Condition
             if (operatorGamepad.left_stick_x > 0) {
-
                 // If the current position is more than the locked position, the lock it at the bottom-line position
                 if (Swivel.getCurrentPosition() < rightLock) {
                     swivelPosition = rightLock;

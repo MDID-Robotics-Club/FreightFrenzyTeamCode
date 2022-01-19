@@ -21,6 +21,7 @@ public class Robot {
     DcMotor lift = null;
     DcMotor extension = null;
     Servo cargo = null;
+    Servo carousel = null;
 
     boolean cargoLoad = false;
 

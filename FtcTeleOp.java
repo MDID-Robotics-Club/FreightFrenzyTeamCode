@@ -81,21 +81,24 @@ public class FtcTeleOp extends LinearOpMode {
             if (driverGamepad.right_trigger > 0) {
                 robot.motorControl.intakeDrive();
             }
-            robot.motorControl.raiseArm(operatorGamepad.dpad_up);
-            robot.motorControl.lowerArm(operatorGamepad.dpad_down);
 
-            robot.motorControl.extendArm(operatorGamepad.right_trigger);
-            robot.motorControl.retractArm(operatorGamepad.left_trigger);
+            testSwivelDrive();
 
-            if (operatorGamepad.left_bumper || operatorGamepad.right_bumper) {
-                if (robot.getCargoLoaderStatus() == 1.0) {
-                    robot.motorControl.dropCargo();
-                } else if (robot.getCargoLoaderStatus() == -1.0) {
-                    robot.motorControl.loadCargo();
-                } else {
-                    robot.motorControl.manualCargoControl(operatorGamepad);
-                }
-            }
+//            robot.motorControl.raiseArm(operatorGamepad.dpad_up);
+//            robot.motorControl.lowerArm(operatorGamepad.dpad_down);
+//
+//            robot.motorControl.extendArm(operatorGamepad.right_trigger);
+//            robot.motorControl.retractArm(operatorGamepad.left_trigger);
+//
+//            if (operatorGamepad.left_bumper || operatorGamepad.right_bumper) {
+//                if (robot.getCargoLoaderStatus() == 1.0) {
+//                    robot.motorControl.dropCargo();
+//                } else if (robot.getCargoLoaderStatus() == -1.0) {
+//                    robot.motorControl.loadCargo();
+//                } else {
+//                    robot.motorControl.manualCargoControl(operatorGamepad);
+//                }
+//            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());
@@ -105,7 +108,7 @@ public class FtcTeleOp extends LinearOpMode {
         }
     }
 
-    public void testSwivelDrive(double Power) {
+    public void testSwivelDrive() {
         int leftLock = 12500;
         int rightLock = -12500;
 

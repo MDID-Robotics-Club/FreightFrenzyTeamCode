@@ -16,10 +16,10 @@ public class Robot {
     DcMotor RF = null;
     DcMotor RB = null;
 
-    DcMotor swivel = null;
-    DcMotor intake = null;
-    DcMotor lift = null;
-    DcMotor extension = null;
+    DcMotorEx swivel = null;
+    DcMotorEx intake = null;
+    DcMotorEx lift = null;
+    DcMotorEx extension = null;
     Servo cargo = null;
     Servo carousel = null;
 
@@ -47,9 +47,13 @@ public class Robot {
                 RB.setDirection(DcMotor.Direction.REVERSE);
         }
 
-        swivel = hardwareMap.get(DcMotor.class, "swivelMotor");
+        swivel = hardwareMap.get(DcMotorEx.class, "swivelMotor");
         intake = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         lift = hardwareMap.get(DcMotorEx.class, "liftMotor");
+        extension = hardwareMap.get(DcMotorEx.class, "extensionMotor");
+
+        carousel = hardwareMap.get(Servo.class, "carouselServo");
+        cargo = hardwareMap.get(Servo.class, "cargoServo");
 
 //        Call the Robot's common initialization protocol and process
         switch(runMode) {

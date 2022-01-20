@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -11,13 +12,13 @@ import org.firstinspires.ftc.teamcode.mdidlib.PIDController;
 public class MotorControl {
     Robot drivenRobot;
 
-    DcMotor swivelMotor;
-    DcMotor intakeMotor;
-    DcMotor liftMotor;
-    DcMotor extensionMotor;
+    DcMotorEx swivelMotor;
+    DcMotorEx intakeMotor;
+    DcMotorEx liftMotor;
+    DcMotorEx extensionMotor;
 
     Servo cargoMotor;
-    Servo carouselMotor;
+    Servo carouselServo;
 
     boolean allowIntake;
 
@@ -34,14 +35,15 @@ public class MotorControl {
         swivelMotor = robot.swivel;
         intakeMotor = robot.intake;
         liftMotor = robot.lift;
-        cargoMotor = robot.cargo;
         extensionMotor = robot.extension;
-        carouselMotor = robot.carousel;
 
-        swivelMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        intakeMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extensionMotor.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        cargoMotor = robot.cargo;
+        carouselServo = robot.carousel;
+
+        swivelMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        intakeMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        liftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
+        extensionMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
         cargoLoaderPosition = -1.0;
         cargoMotor.setPosition(cargoLoaderPosition);
@@ -74,13 +76,13 @@ public class MotorControl {
     public void raiseArm(boolean dPad) {
         if (dPad) {
             armTargetPosition += 3;
-            liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            liftMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             liftMotor.setTargetPosition(armTargetPosition);
-            liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            liftMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             liftMotor.setPower(1);
         }
         liftMotor.setPower(0);
-        liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        liftMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
         liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
@@ -88,13 +90,13 @@ public class MotorControl {
     public void lowerArm(boolean dPad) {
         if (dPad) {
             armTargetPosition -= 3;
-            liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            liftMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             liftMotor.setTargetPosition(armTargetPosition);
-            liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+            liftMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             liftMotor.setPower(-1);
         }
         liftMotor.setPower(0);
-        liftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        liftMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
         liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
@@ -135,10 +137,10 @@ public class MotorControl {
     }
 
     public void spinCarousel(double power) {
-        carouselPosition = carouselMotor.getPosition();
+        carouselPosition = carouselServo.getPosition();
         double changeInPosition = Range.clip(power, -3.0, 3.0);
         carouselPosition += changeInPosition;
 
-        carouselMotor.setPosition(carouselPosition);
+        carouselServo.setPosition(carouselPosition);
     }
 }

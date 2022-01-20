@@ -33,26 +33,24 @@ public class Robot {
      */
 
     public Robot(Parameters.RunMode runMode, Parameters.DriveMode driveMode, HardwareMap hardwareMap) {
-        switch(driveMode) {
-            case MECANUM_DRIVE:
-                LF = hardwareMap.tryGet(DcMotor.class, "leftFront");
-                LB = hardwareMap.tryGet(DcMotor.class, "leftBack");
-                RF = hardwareMap.tryGet(DcMotor.class, "rightFront");
-                RB = hardwareMap.tryGet(DcMotor.class, "rightBack");
+        LF = hardwareMap.tryGet(DcMotor.class, "leftFront");
+        LB = hardwareMap.tryGet(DcMotor.class, "leftBack");
+        RF = hardwareMap.tryGet(DcMotor.class, "rightFront");
+        RB = hardwareMap.tryGet(DcMotor.class, "rightBack");
 
-                // Have not yet initiated reverse MOTOR PARAMETER, so using as a temporary placeholder.
-                LF.setDirection(DcMotor.Direction.REVERSE);
-                LB.setDirection(DcMotor.Direction.REVERSE);
-                RF.setDirection(DcMotor.Direction.REVERSE);
-                RB.setDirection(DcMotor.Direction.REVERSE);
-        }
+        // Have not yet initiated reverse MOTOR PARAMETER, so using as a temporary placeholder.
+        LF.setDirection(DcMotor.Direction.REVERSE);
+        LB.setDirection(DcMotor.Direction.REVERSE);
+        RF.setDirection(DcMotor.Direction.REVERSE);
+        RB.setDirection(DcMotor.Direction.REVERSE);
+
 
         swivel = hardwareMap.get(DcMotorEx.class, "swivelMotor");
         intake = hardwareMap.get(DcMotorEx.class, "intakeMotor");
         lift = hardwareMap.get(DcMotorEx.class, "liftMotor");
         extension = hardwareMap.get(DcMotorEx.class, "extensionMotor");
 
-        carousel = hardwareMap.get(Servo.class, "carouselServo");
+        carousel = hardwareMap.tryGet(Servo.class, "carouselServo");
         cargo = hardwareMap.get(Servo.class, "cargoServo");
 
 //        Call the Robot's common initialization protocol and process

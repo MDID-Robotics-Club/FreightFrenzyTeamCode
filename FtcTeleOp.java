@@ -40,6 +40,8 @@ public class FtcTeleOp extends LinearOpMode {
     static final double SWIVEL_P = 0.00006;
 
     double chassisPower;
+
+    int extensionPower;
 //    FtcDashboard dashboard;
 
     @Override
@@ -83,6 +85,7 @@ public class FtcTeleOp extends LinearOpMode {
             }
 
             testSwivelDrive();
+            extensionPower = robot.motorControl.teleOpExtensionArm(operatorGamepad);
 
 //            robot.motorControl.raiseArm(operatorGamepad.dpad_up);
 //            robot.motorControl.lowerArm(operatorGamepad.dpad_down);
@@ -104,6 +107,7 @@ public class FtcTeleOp extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Mecanum Drive Power Output", "LeftFront: %.2f LeftBack: %.2f RightFront: %.2f RightBack: %.2f",
                     drivePower[0], drivePower[1], drivePower[2], drivePower[3]);
+            telemetry.addData("Extension Arm Position:", extensionPower);
             telemetry.update();
         }
     }

@@ -24,10 +24,14 @@ public class MotorControl {
 
     private int armTargetPosition = 0;
     private double cargoLoaderPosition = 0;
+    private int minExtensionPosition = 0;
+    private int maxExtensionPosition = 10000;
 
     private double carouselPosition = 0;
+    private int extensionPosition = 0;
 
-    PIDController liftPID;
+    PIDController liftPID = new PIDController(0004, 0.0003, 0);
+    PIDController extensionPID = new PIDController(0.0004, 0, 0);
 
     public MotorControl(Robot robot) {
         drivenRobot = robot;
@@ -45,10 +49,11 @@ public class MotorControl {
         liftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         extensionMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
 
+        extensionMotor.setMode(Parameters.EXTENSION_MOTOR_MODE);
+
         cargoLoaderPosition = -1.0;
         cargoMotor.setPosition(cargoLoaderPosition);
 
-        PIDController liftPID = new PIDController(0004, 0.0003, 0, liftMotor, 1000);
     }
 
     public void swivelDrive(double Power) {
@@ -98,19 +103,68 @@ public class MotorControl {
         liftMotor.setPower(0);
         liftMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
+        // Optimization Room: adjusting for cos() because of gravity.
         liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
 
-    public void autoArm() {
-
+    public int teleOpExtensionArm(Gamepad gamepad) {
+        extensionPosition = extensionMotor.getCurrentPosition();
+        if (gamepad.right_trigger > 0.1) {
+            if (extensionPosition > maxExtensionPosition) {
+                extensionPosition = maxExtensionPosition;
+                extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
+            } else {
+                extensionMotor.setPower(0.4);
+                extensionPosition = extensionMotor.getCurrentPosition();
+            }
+        } else if (gamepad.left_trigger > 0.1) {
+            if (extensionPosition < minExtensionPosition) {
+                extensionPosition = minExtensionPosition;
+                extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
+            } else {
+                extensionMotor.setPower(-0.4);
+                extensionPosition = extensionMotor.getCurrentPosition();
+            }
+        }
+        extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
+        return extensionPosition;
     }
 
-    public void extendArm(double trigger) {
+    /**
+     * Extends the Arm to
+     * @param Position
+     */
 
+    public void extendArm(int Position) {
+        if (Position < extensionPosition) {
+            Position = extensionPosition;
+        } else {
 
+            extensionMotor.setTargetPosition(Position);
+            extensionMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            extensionMotor.setPower(0.3);
+            while (extensionMotor.getCurrentPosition() < Position || extensionMotor.isBusy()) {
+
+            }
+            extensionMotor.setPower(0);
+            extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            extensionPosition = extensionMotor.getCurrentPosition();
+        }
     }
 
-    public void retractArm(double trigger) {
+    public void retractArm(int Position) {
+        extensionMotor.setTargetPosition(Position);
+        extensionMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        extensionMotor.setPower(0.3);
+        while (extensionMotor.getCurrentPosition() < Position || extensionMotor.isBusy()) {
+
+        }
+        extensionMotor.setPower(0);
+        extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extensionPosition = extensionMotor.getCurrentPosition();
+    }
+
+    public void resetExtensionArm() {
 
     }
 

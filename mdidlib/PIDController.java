@@ -5,8 +5,6 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 
 public class PIDController {
 
-    DcMotor controlledMotor = null;
-
     double kP;
     double kI;
     double kD;
@@ -25,9 +23,7 @@ public class PIDController {
         timer.reset();
     }
 
-    public PIDController(double p, double i, double d, DcMotor motor, double maxIntegralSum) {
-        controlledMotor = motor;
-
+    public PIDController(double p, double i, double d, double maxIntegralSum) {
         kP = p;
         kI = i;
         kD = d;

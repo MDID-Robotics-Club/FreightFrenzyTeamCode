@@ -44,11 +44,8 @@ public class FtcTeleOp extends LinearOpMode {
     public int swivelPosition = 0;
 
     DcMotor Extension;
-    DcMotor Intake;
 
     static final double SWIVEL_P = 0.00006;
-
-    boolean intakeDrive = false;
 
     double chassisPower;
 
@@ -76,12 +73,9 @@ public class FtcTeleOp extends LinearOpMode {
         // Getting Motors
         Swivel = hardwareMap.get(DcMotor.class, "swivelMotor");
         Extension = hardwareMap.get(DcMotor.class, "extensionMotor");
-        Intake = hardwareMap.get(DcMotor.class, "intakeMotor");
 
-
+        Swivel.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         Extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        Intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Getting Gamepad from Phone
         driverGamepad = gamepad1;
@@ -106,8 +100,15 @@ public class FtcTeleOp extends LinearOpMode {
             } else {
                 robot.motorControl.intakePause();
             }
+            robot.motorControl.autoCargoControl(operatorGamepad);
 
-            int swivelpos = testSwivelDrive();
+            if (operatorGamepad.dpad_left) {
+                Swivel.setPower(-1.0);
+            } else if (operatorGamepad.dpad_right) {
+                Swivel.setPower(1.0);
+            }
+
+            int swivelpos = Swivel.getCurrentPosition();
 
 
             extensionPosition = Extension.getCurrentPosition();
@@ -145,9 +146,9 @@ public class FtcTeleOp extends LinearOpMode {
             telemetry.addData("Mecanum Drive Power Output", "LeftFront: %.2f LeftBack: %.2f RightFront: %.2f RightBack: %.2f",
                     drivePower[0], drivePower[1], drivePower[2], drivePower[3]);
             telemetry.addData("operatorGamepad Output", "RJS-X: %.2f RJS-Y: %.2f, LJS-X: %.2f", operatorGamepad.right_stick_x, operatorGamepad.right_stick_y, operatorGamepad.left_stick_x);
-            telemetry.addData("Extension Arm Power:", "%f", Extension.getPower());
+            telemetry.addData("Extension Arm Power:", "%f", robot.extension.getPower());
             telemetry.addData("Swivel Position:", "%d", swivelpos);
-            telemetry.addData("Intake Drive:", "%f", Intake.getPower());
+            telemetry.addData("Intake Drive:", "%f", robot.intake.getPower());
             telemetry.update();
         }
     }
@@ -159,29 +160,38 @@ public class FtcTeleOp extends LinearOpMode {
         // If the Operator intends to turn the swivel
         if (operatorGamepad.left_stick_x > 0.2 || operatorGamepad.left_stick_x < -0.2) {
             // Conditioning Left or Right Turn
+            telemetry.addData("In Condition", "True");
 
                 // Right Condition
             if (operatorGamepad.left_stick_x > 0) {
                 // If the current position is more than the locked position, the lock it at the bottom-line position
-                if (Swivel.getCurrentPosition() < rightLock) {
-                    swivelPosition = rightLock;
-                    swivelLock(swivelPosition, Swivel.getCurrentPosition());
-                } else {
-                    // Otherwise give it power as intended
-                    Swivel.setPower(1.0 * swivelPowerScale);
-                }
+
+//                if (Swivel.getCurrentPosition() < rightLock) {
+//                    swivelPosition = rightLock;
+//                    swivelLock(swivelPosition, Swivel.getCurrentPosition());
+//                } else {
+//                    // Otherwise give it power as intended
+//                    Swivel.setPower(1.0 * swivelPowerScale);
+//                }
+
+                Swivel.setPower(0.5);
+
                 swivelPosition = Swivel.getCurrentPosition();
 
                 // Left Condition
             } else if (operatorGamepad.left_stick_x < 0) {
                 // If the current position is more than the locked position, the lock it at the bottom-line position
-                if (Swivel.getCurrentPosition() > leftLock) {
-                    swivelPosition = leftLock;
-                    swivelLock(swivelPosition, Swivel.getCurrentPosition());
-                } else {
-                    // Otherwise give it power as intended
-                    Swivel.setPower(-1.0 * swivelPowerScale);
-                }
+
+//                if (Swivel.getCurrentPosition() > leftLock) {
+//                    swivelPosition = leftLock;
+//                    swivelLock(swivelPosition, Swivel.getCurrentPosition());
+//                } else {
+//                    // Otherwise give it power as intended
+//                    Swivel.setPower(-1.0 * swivelPowerScale);
+//                }
+
+                Swivel.setPower(-0.5);
+
                 swivelPosition = Swivel.getCurrentPosition();
             }
 

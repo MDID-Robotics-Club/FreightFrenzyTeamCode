@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.Range;
@@ -21,6 +22,7 @@ public class MotorControl {
     Servo carouselServo;
 
     boolean allowIntake;
+    private boolean extensionIsBusy = false;
 
     private int armTargetPosition = 0;
     private double cargoLoaderPosition = 0;
@@ -43,6 +45,7 @@ public class MotorControl {
 
         cargoMotor = robot.cargo;
         carouselServo = robot.carousel;
+        intakeMotor.setDirection((DcMotor.Direction.REVERSE));
         extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         swivelMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
@@ -168,15 +171,42 @@ public class MotorControl {
 
     }
 
+    // CARGO SERVO RELATED OPERATIONS
+
+    public void autoCargoControl(Gamepad gamepad) {
+        extensionIsBusy = extensionMotor.isBusy() || extensionMotor.getPower() > 0.05 || extensionPosition > minExtensionPosition + 10;
+        if (!(gamepad.right_bumper && gamepad.left_bumper)) {
+            if (extensionIsBusy) {
+                if (gamepad.b) {
+                    dropCargo();
+                } else if (gamepad.a) {
+                    defaultCargo();
+                }
+            } else {
+                loadCargo();
+            }
+        }
+    }
+
     public void dropCargo() {
         // Maybe consider adjusting logic
         cargoLoaderPosition = -1.0;
         cargoMotor.setPosition(cargoLoaderPosition);
     }
 
+    public void defaultCargo() {
+        cargoLoaderPosition = 0.9;
+        cargoMotor.setPosition(cargoLoaderPosition);
+    }
+
     public void loadCargo() {
         // Could insert color sensor logic in here.
-        cargoLoaderPosition = 1.0;
+        cargoLoaderPosition = 0.7;
+        cargoMotor.setPosition(cargoLoaderPosition);
+    }
+
+    public void specifyCargo(double Power) {
+        cargoLoaderPosition += Power;
         cargoMotor.setPosition(cargoLoaderPosition);
     }
 

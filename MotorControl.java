@@ -30,7 +30,7 @@ public class MotorControl {
     private double carouselPosition = 0;
     private int extensionPosition = 0;
 
-    PIDController liftPID = new PIDController(0004, 0.0003, 0);
+    PIDController liftPID = new PIDController(0.007, 0.0003, 0);
     PIDController extensionPID = new PIDController(0.0004, 0, 0);
 
     public MotorControl(Robot robot) {
@@ -43,13 +43,12 @@ public class MotorControl {
 
         cargoMotor = robot.cargo;
         carouselServo = robot.carousel;
+        extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
 
         swivelMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         intakeMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         liftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
         extensionMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-
-        extensionMotor.setMode(Parameters.EXTENSION_MOTOR_MODE);
 
         cargoLoaderPosition = -1.0;
         cargoMotor.setPosition(cargoLoaderPosition);
@@ -61,21 +60,28 @@ public class MotorControl {
         allowIntake = false;
     }
 
-    public void intakeDrive() {
-        int swivelPosition = swivelMotor.getCurrentPosition();
-        allowIntake = true;
-        if (swivelPosition < 30 && swivelPosition > -30) {
-            allowIntake = true;
-        } else {
-            allowIntake = false;
-        }
+    public boolean intakeDrive() {
+//        int swivelPosition = swivelMotor.getCurrentPosition();
+//        allowIntake = true;
+//        if (swivelPosition < 30 || swivelPosition > -30) {
+//            allowIntake = true;
+//        } else {
+//            allowIntake = false;
+//        }
+//
+//        if (allowIntake) {
+//            // May want to control with PID Controller....
+//            intakeMotor.setPower(1.0);
+//        } else {
+//            intakeMotor.setPower(0);
+//        }
+        intakeMotor.setPower(1.0);
+        return true;
+    }
 
-        if (allowIntake) {
-            // May want to control with PID Controller....
-            intakeMotor.setPower(1.0);
-        } else {
-            intakeMotor.setPower(0);
-        }
+    public boolean intakePause() {
+        intakeMotor.setPower(0.0);
+        return false;
     }
 
     public void raiseArm(boolean dPad) {
@@ -109,25 +115,17 @@ public class MotorControl {
 
     public int teleOpExtensionArm(Gamepad gamepad) {
         extensionPosition = extensionMotor.getCurrentPosition();
-        if (gamepad.right_trigger > 0.1) {
-            if (extensionPosition > maxExtensionPosition) {
-                extensionPosition = maxExtensionPosition;
-                extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
-            } else {
-                extensionMotor.setPower(0.4);
-                extensionPosition = extensionMotor.getCurrentPosition();
-            }
-        } else if (gamepad.left_trigger > 0.1) {
-            if (extensionPosition < minExtensionPosition) {
-                extensionPosition = minExtensionPosition;
-                extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
-            } else {
-                extensionMotor.setPower(-0.4);
-                extensionPosition = extensionMotor.getCurrentPosition();
-            }
+        if (gamepad.right_trigger > 0) {
+            extensionMotor.setPower(0.8);
+            extensionPosition = extensionMotor.getCurrentPosition();
+        } else if (gamepad.left_trigger > 0) {
+            extensionMotor.setPower(-0.8);
+            extensionPosition = extensionMotor.getCurrentPosition();
+        } else {
+            extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
         }
-        extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
-        return extensionPosition;
+//        extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
+        return extensionMotor.getCurrentPosition();
     }
 
     /**
@@ -139,7 +137,6 @@ public class MotorControl {
         if (Position < extensionPosition) {
             Position = extensionPosition;
         } else {
-
             extensionMotor.setTargetPosition(Position);
             extensionMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
             extensionMotor.setPower(0.3);
@@ -147,12 +144,15 @@ public class MotorControl {
 
             }
             extensionMotor.setPower(0);
-            extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+            extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
             extensionPosition = extensionMotor.getCurrentPosition();
         }
     }
 
     public void retractArm(int Position) {
+        if (Position > extensionPosition) {
+            Position = extensionPosition;
+        }
         extensionMotor.setTargetPosition(Position);
         extensionMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
         extensionMotor.setPower(0.3);
@@ -160,7 +160,7 @@ public class MotorControl {
 
         }
         extensionMotor.setPower(0);
-        extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
         extensionPosition = extensionMotor.getCurrentPosition();
     }
 

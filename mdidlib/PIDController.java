@@ -10,7 +10,7 @@ public class PIDController {
     double kD;
 
     double integralSum = 0;
-    double maxIntegral;
+    double maxIntegral = 0;
 
     ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
     private double lastError = 0;
@@ -43,7 +43,7 @@ public class PIDController {
 
         double P = kP * error;
 
-        double I = kI * (error * timer.time());
+        double I = kI * (error * timer.seconds());
         integralSum += I;
 
         if (maxIntegral > 0) {
@@ -54,7 +54,7 @@ public class PIDController {
             }
         }
 
-        double D = kD * ( (error - lastError) / (timer.time()) );
+        double D = kD * ( (error - lastError) / (timer.seconds()) );
 
         double output = integralSum + P + D;
 

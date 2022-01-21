@@ -48,6 +48,8 @@ public class RobotDrive {
 
     boolean driveIsBusy;
 
+    double chassisPower = 1.0;
+
     public RobotDrive (Robot robot) {
         drivenRobot = robot;
 
@@ -69,7 +71,7 @@ public class RobotDrive {
 
     public double[] mecanumDrive(double analogX, double analogY, double analogZ) {
         double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
-        double x = analogY;
+        double x = -analogY;
         double y = analogX;
         double turn  =  analogZ;
 
@@ -89,6 +91,11 @@ public class RobotDrive {
     }
 
     public void encoderDrive(double driveSpeed, double verticalTranslation, double horizontalTranslation) {
+        LF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        LB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RF.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        RB.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
         double x = verticalTranslation / Math.cos(45);
         double y = horizontalTranslation / Math.cos(45);
 
@@ -129,7 +136,67 @@ public class RobotDrive {
         RB.setPower(0);
     }
 
-    public void encoderTurn(double angle) {
+    /**
+     * Function that changes the orientation of the chassis based on meter count.
+     * @param changePosition
+     */
 
+    public void encoderTurn(int changePosition) {
+        LF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        LB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RF.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        RB.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        LF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        LB.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        RF.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        RB.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+
+        double lfChangePosition = 0;
+        double lbChangePosition = 0;
+        double rfChangePosition = 0;
+        double rbChangePosition = 0;
+
+        double avgChassisChange = (lfChangePosition + lbChangePosition + rfChangePosition + rbChangePosition) / 4;
+
+        changePosition *= Parameters.ENCODER_PPR_PER_METER;
+        double absoluteChangePosition = Math.abs(changePosition);
+
+        if (changePosition < 0) {
+            LF.setTargetPosition(changePosition);
+            LB.setTargetPosition(changePosition);
+            RF.setTargetPosition(-changePosition);
+            RB.setTargetPosition(-changePosition);
+
+            LF.setPower(chassisPower);
+            LB.setPower(chassisPower);
+            RF.setPower(-chassisPower);
+            RB.setPower(-chassisPower);
+        } else if (changePosition > 0) {
+            LF.setTargetPosition(-changePosition);
+            LB.setTargetPosition(-changePosition);
+            RF.setTargetPosition(changePosition);
+            RB.setTargetPosition(changePosition);
+
+            LF.setPower(-chassisPower);
+            LB.setPower(-chassisPower);
+            RF.setPower(chassisPower);
+            RB.setPower(chassisPower);
+        }
+
+        driveIsBusy = LF.isBusy() || LB.isBusy() || RF.isBusy() || RB.isBusy();
+        while (Math.abs(avgChassisChange) < absoluteChangePosition || driveIsBusy) {
+            driveIsBusy = LF.isBusy() || LB.isBusy() || RF.isBusy() || RB.isBusy();
+            lfChangePosition = LF.getCurrentPosition();
+            lbChangePosition = LB.getCurrentPosition();
+            rfChangePosition = RF.getCurrentPosition();
+            rbChangePosition = RB.getCurrentPosition();
+            avgChassisChange = (lfChangePosition + lbChangePosition + rfChangePosition + rbChangePosition) / 4;
+        }
+
+        LF.setPower(0);
+        LB.setPower(0);
+        RF.setPower(0);
+        RB.setPower(0);
     }
 }

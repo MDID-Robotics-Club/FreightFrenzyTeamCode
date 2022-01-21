@@ -3,9 +3,12 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import com.acmerobotics.dashboard.FtcDashboard;
 
 /**
  * Operator Mode Controller Program.
@@ -14,6 +17,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 @TeleOp(name="TeleOp", group="TeleOp")
 //@Disabled
 public class FtcTeleOp extends LinearOpMode {
+
+    FtcDashboard dashboard;
 
     Parameters.RunMode runMode = Parameters.RunMode.TELEOP;
 
@@ -34,18 +39,27 @@ public class FtcTeleOp extends LinearOpMode {
     private double drivePowerScale = 1.0;
     private double swivelPowerScale = 0.8;
     private double armPowerScale = 1.0;
+    double extensionPosition = 0;
 
     public int swivelPosition = 0;
 
+    DcMotor Extension;
+    DcMotor Intake;
+
     static final double SWIVEL_P = 0.00006;
+
+    boolean intakeDrive = false;
 
     double chassisPower;
 
-    int extensionPower;
+    private int extensionPower;
 //    FtcDashboard dashboard;
 
     @Override
     public void runOpMode() throws InterruptedException {
+        dashboard = FtcDashboard.getInstance();
+        telemetry = dashboard.getTelemetry();
+
         telemetry.addData("Status", "Initialized");
         telemetry.update();
 
@@ -53,7 +67,7 @@ public class FtcTeleOp extends LinearOpMode {
         // Everything to do with operating the robot is controlled through the robot class in this case
         // You just call robot.methodName();
 
-        Robot robot = new Robot(Parameters.RunMode.TELEOP, Parameters.DriveMode.MECANUM_DRIVE, hardwareMap);
+        Robot robot = new Robot(runMode, Parameters.DriveMode.MECANUM_DRIVE, hardwareMap);
 
         // Initialize the hardware variables. Note that the strings used here as parameters
         // to 'get' must correspond to the names assigned during the robot configuration
@@ -61,6 +75,13 @@ public class FtcTeleOp extends LinearOpMode {
 
         // Getting Motors
         Swivel = hardwareMap.get(DcMotor.class, "swivelMotor");
+        Extension = hardwareMap.get(DcMotor.class, "extensionMotor");
+        Intake = hardwareMap.get(DcMotor.class, "intakeMotor");
+
+
+        Extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Intake.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        Intake.setDirection(DcMotorSimple.Direction.REVERSE);
 
         // Getting Gamepad from Phone
         driverGamepad = gamepad1;
@@ -82,9 +103,25 @@ public class FtcTeleOp extends LinearOpMode {
             double[] drivePower = robot.robotDrive.mecanumDrive(driverGamepad.left_stick_x, driverGamepad.left_stick_y, driverGamepad.right_stick_x);
             if (driverGamepad.right_trigger > 0) {
                 robot.motorControl.intakeDrive();
+            } else {
+                robot.motorControl.intakePause();
             }
 
-            testSwivelDrive();
+            int swivelpos = testSwivelDrive();
+
+
+            extensionPosition = Extension.getCurrentPosition();
+            if (operatorGamepad.right_trigger > 0) {
+                Extension.setPower(0.8);
+                extensionPosition = Extension.getCurrentPosition();
+            } else if (operatorGamepad.left_trigger > 0) {
+                Extension.setPower(-0.8);
+                extensionPosition = Extension.getCurrentPosition();
+            } else {
+                Extension.setPower(0);
+            }
+
+
             extensionPower = robot.motorControl.teleOpExtensionArm(operatorGamepad);
 
 //            robot.motorControl.raiseArm(operatorGamepad.dpad_up);
@@ -107,17 +144,20 @@ public class FtcTeleOp extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Mecanum Drive Power Output", "LeftFront: %.2f LeftBack: %.2f RightFront: %.2f RightBack: %.2f",
                     drivePower[0], drivePower[1], drivePower[2], drivePower[3]);
-            telemetry.addData("Extension Arm Position:", extensionPower);
+            telemetry.addData("operatorGamepad Output", "RJS-X: %.2f RJS-Y: %.2f, LJS-X: %.2f", operatorGamepad.right_stick_x, operatorGamepad.right_stick_y, operatorGamepad.left_stick_x);
+            telemetry.addData("Extension Arm Power:", "%f", Extension.getPower());
+            telemetry.addData("Swivel Position:", "%d", swivelpos);
+            telemetry.addData("Intake Drive:", "%f", Intake.getPower());
             telemetry.update();
         }
     }
 
-    public void testSwivelDrive() {
+    public int testSwivelDrive() {
         int leftLock = 12500;
         int rightLock = -12500;
 
         // If the Operator intends to turn the swivel
-        if (operatorGamepad.left_stick_x > 0.2 && operatorGamepad.left_stick_x < -0.2) {
+        if (operatorGamepad.left_stick_x > 0.2 || operatorGamepad.left_stick_x < -0.2) {
             // Conditioning Left or Right Turn
 
                 // Right Condition
@@ -149,11 +189,10 @@ public class FtcTeleOp extends LinearOpMode {
         } else if (operatorGamepad.x) {
             swivelPosition = 0;
             swivelLock(swivelPosition, Swivel.getCurrentPosition());
-        }
-        else {
+        } else {
             swivelLock(swivelPosition, Swivel.getCurrentPosition());
         }
-
+        return swivelPosition;
     }
 
     public void swivelLock(double targetPosition, double currentPosition) {

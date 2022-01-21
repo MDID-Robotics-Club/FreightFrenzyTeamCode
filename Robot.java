@@ -41,8 +41,8 @@ public class Robot {
         // Have not yet initiated reverse MOTOR PARAMETER, so using as a temporary placeholder.
         LF.setDirection(DcMotor.Direction.REVERSE);
         LB.setDirection(DcMotor.Direction.REVERSE);
-        RF.setDirection(DcMotor.Direction.REVERSE);
-        RB.setDirection(DcMotor.Direction.REVERSE);
+//        RF.setDirection(DcMotor.Direction.REVERSE);
+//        RB.setDirection(DcMotor.Direction.REVERSE);
 
 
         swivel = hardwareMap.get(DcMotorEx.class, "swivelMotor");
@@ -54,20 +54,8 @@ public class Robot {
         cargo = hardwareMap.get(Servo.class, "cargoServo");
 
 //        Call the Robot's common initialization protocol and process
-        switch(runMode) {
-            case TELEOP:
-
-                robotDrive = new RobotDrive(this);
-                motorControl = new MotorControl(this);
-            case AUTONOMOUS:
-
-                robotDrive = new RobotDrive(this);
-                motorControl = new MotorControl(this);
-//            case DISABLED case INVALID:
-//                break;
-//            case TEST:
-//                break;
-        }
+        robotDrive = new RobotDrive(this);
+        motorControl = new MotorControl(this);
     }
 
     public void startMode(Parameters.RunMode runMode) {

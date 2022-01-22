@@ -13,10 +13,10 @@ import org.firstinspires.ftc.teamcode.mdidlib.PIDController;
 public class MotorControl {
     Robot drivenRobot;
 
-    DcMotorEx swivelMotor;
-    DcMotorEx intakeMotor;
-    DcMotorEx liftMotor;
-    DcMotorEx extensionMotor;
+    DcMotor swivelMotor;
+    DcMotor intakeMotor;
+    DcMotor liftMotor;
+    DcMotor extensionMotor;
 
     Servo cargoMotor;
     Servo carouselServo;
@@ -27,13 +27,18 @@ public class MotorControl {
     private int armTargetPosition = 0;
     private double cargoLoaderPosition = 0;
     private int minExtensionPosition = 0;
-    private int maxExtensionPosition = 10000;
+    private int maxExtensionPosition = 5000;
 
     private double carouselPosition = 0;
-    private int extensionPosition = 0;
+    private int extensionPosition;
+    private int swivelPosition = 0;
 
-    PIDController liftPID = new PIDController(0.007, 0.0003, 0);
+    int swivelLeftLock = 12500;
+    int swivelRightLock = -12500;
+
+    PIDController liftPID = new PIDController(0.0007, 0.0001, 0.0001);
     PIDController extensionPID = new PIDController(0.0004, 0, 0);
+    PIDController swivelPID = new PIDController(0.003, 0, 0);
 
     public MotorControl(Robot robot) {
         drivenRobot = robot;
@@ -45,17 +50,10 @@ public class MotorControl {
 
         cargoMotor = robot.cargo;
         carouselServo = robot.carousel;
-        intakeMotor.setDirection((DcMotor.Direction.REVERSE));
-        extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        intakeMotor.setDirection(DcMotor.Direction.REVERSE);
 
-        swivelMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        intakeMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        liftMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-        extensionMotor.setMode(DcMotorEx.RunMode.STOP_AND_RESET_ENCODER);
-
-        cargoLoaderPosition = -1.0;
+        cargoLoaderPosition = 1.0;
         cargoMotor.setPosition(cargoLoaderPosition);
-
     }
 
     public void swivelDrive(double Power) {
@@ -63,7 +61,7 @@ public class MotorControl {
         allowIntake = false;
     }
 
-    public boolean intakeDrive() {
+    public void intakeDrive() {
 //        int swivelPosition = swivelMotor.getCurrentPosition();
 //        allowIntake = true;
 //        if (swivelPosition < 30 || swivelPosition > -30) {
@@ -79,56 +77,106 @@ public class MotorControl {
 //            intakeMotor.setPower(0);
 //        }
         intakeMotor.setPower(1.0);
-        return true;
     }
 
-    public boolean intakePause() {
+    public void intakePause() {
         intakeMotor.setPower(0.0);
-        return false;
+    }
+
+    // SWIVEL PLATE CONTROL
+
+    public int autoSwivel(Gamepad operatorGamepad) {
+        // If the Operator intends to turn the swivel
+        if (operatorGamepad.left_stick_x > 0.2 || operatorGamepad.left_stick_x < -0.2) {
+            // Conditioning Left or Right Turn
+
+            // Right Condition
+            if (operatorGamepad.left_stick_x > 0) {
+                // If the current position is more than the locked position, the lock it at the bottom-line position
+
+//                if (Swivel.getCurrentPosition() < rightLock) {
+//                    swivelPosition = rightLock;
+//                    swivelLock(swivelPosition, Swivel.getCurrentPosition());
+//                } else {
+//                    // Otherwise give it power as intended
+//                    Swivel.setPower(1.0 * swivelPowerScale);
+//                }
+
+                swivelMotor.setPower(-0.6);
+
+                swivelPosition = swivelMotor.getCurrentPosition();
+
+                // Left Condition
+            } else if (operatorGamepad.left_stick_x < 0) {
+                // If the current position is more than the locked position, the lock it at the bottom-line position
+
+//                if (Swivel.getCurrentPosition() > leftLock) {
+//                    swivelPosition = leftLock;
+//                    swivelLock(swivelPosition, Swivel.getCurrentPosition());
+//                } else {
+//                    // Otherwise give it power as intended
+//                    Swivel.setPower(-1.0 * swivelPowerScale);
+//                }
+
+                swivelMotor.setPower(0.6);
+
+                swivelPosition = swivelMotor.getCurrentPosition();
+            }
+
+            // Press X Button to reset, controlled using swivelLock Controller
+        } else if (operatorGamepad.x) {
+            swivelPosition = 0;
+            swivelMotor.setPower(swivelPID.update(swivelPosition, swivelMotor.getCurrentPosition()));
+        } else {
+            swivelMotor.setPower(swivelPID.update(swivelPosition, swivelMotor.getCurrentPosition()));
+        }
+        return swivelPosition;
+    }
+
+    // ARM RAISE/LOWER CONTROL
+    public void holdArm() {
+        liftMotor.setPower(-liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
 
     public void raiseArm(boolean dPad) {
         if (dPad) {
             armTargetPosition += 3;
-            liftMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             liftMotor.setTargetPosition(armTargetPosition);
-            liftMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             liftMotor.setPower(1);
         }
         liftMotor.setPower(0);
-        liftMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
-        liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
 
     public void lowerArm(boolean dPad) {
         if (dPad) {
             armTargetPosition -= 3;
-            liftMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             liftMotor.setTargetPosition(armTargetPosition);
-            liftMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             liftMotor.setPower(-1);
         }
         liftMotor.setPower(0);
-        liftMotor.setMode(DcMotorEx.RunMode.RUN_WITHOUT_ENCODER);
         // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
         // Optimization Room: adjusting for cos() because of gravity.
-        liftMotor.setPower(liftPID.update(armTargetPosition, liftMotor.getCurrentPosition()));
     }
 
-    public int teleOpExtensionArm(Gamepad gamepad) {
-        extensionPosition = extensionMotor.getCurrentPosition();
+
+    // ARM EXTENSION CONTROL
+    public int autoExtension(Gamepad gamepad) {
         if (gamepad.right_trigger > 0) {
-            extensionMotor.setPower(0.8);
+            extensionMotor.setPower(0.3);
             extensionPosition = extensionMotor.getCurrentPosition();
         } else if (gamepad.left_trigger > 0) {
-            extensionMotor.setPower(-0.8);
+            extensionMotor.setPower(-0.3);
             extensionPosition = extensionMotor.getCurrentPosition();
         } else {
             extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
         }
 //        extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
-        return extensionMotor.getCurrentPosition();
+        return extensionPosition;
     }
 
     /**
@@ -141,13 +189,13 @@ public class MotorControl {
             Position = extensionPosition;
         } else {
             extensionMotor.setTargetPosition(Position);
-            extensionMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+            extensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             extensionMotor.setPower(0.3);
             while (extensionMotor.getCurrentPosition() < Position || extensionMotor.isBusy()) {
 
             }
             extensionMotor.setPower(0);
-            extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+            extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             extensionPosition = extensionMotor.getCurrentPosition();
         }
     }
@@ -157,13 +205,13 @@ public class MotorControl {
             Position = extensionPosition;
         }
         extensionMotor.setTargetPosition(Position);
-        extensionMotor.setMode(DcMotorEx.RunMode.RUN_TO_POSITION);
+        extensionMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         extensionMotor.setPower(0.3);
         while (extensionMotor.getCurrentPosition() < Position || extensionMotor.isBusy()) {
 
         }
         extensionMotor.setPower(0);
-        extensionMotor.setMode(DcMotorEx.RunMode.RUN_USING_ENCODER);
+        extensionMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         extensionPosition = extensionMotor.getCurrentPosition();
     }
 
@@ -219,6 +267,8 @@ public class MotorControl {
         }
         cargoMotor.setPosition(Range.clip(cargoLoaderPosition, -1.0, 1.0));
     }
+
+    // CARAOUSEL CONTROL
 
     public void spinCarousel(double power) {
         carouselPosition = carouselServo.getPosition();

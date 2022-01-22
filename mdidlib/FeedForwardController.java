@@ -10,4 +10,8 @@ public class FeedForwardController {
         double output = reference * kP;
         return output;
     }
+
+    public double gravitationalAdjust() {
+        return 1.0;
+    }
 }

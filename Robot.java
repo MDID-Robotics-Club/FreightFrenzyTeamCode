@@ -16,10 +16,10 @@ public class Robot {
     DcMotor RF = null;
     DcMotor RB = null;
 
-    DcMotorEx swivel = null;
-    DcMotorEx intake = null;
-    DcMotorEx lift = null;
-    DcMotorEx extension = null;
+    DcMotor swivel = null;
+    DcMotor intake = null;
+    DcMotor lift = null;
+    DcMotor extension = null;
     Servo cargo = null;
     Servo carousel = null;
 
@@ -45,13 +45,23 @@ public class Robot {
 //        RB.setDirection(DcMotor.Direction.REVERSE);
 
 
-        swivel = hardwareMap.get(DcMotorEx.class, "swivelMotor");
-        intake = hardwareMap.get(DcMotorEx.class, "intakeMotor");
-        lift = hardwareMap.get(DcMotorEx.class, "liftMotor");
-        extension = hardwareMap.get(DcMotorEx.class, "extensionMotor");
+        swivel = hardwareMap.get(DcMotor.class, "swivelMotor");
+        intake = hardwareMap.get(DcMotor.class, "intakeMotor");
+        lift = hardwareMap.get(DcMotor.class, "liftMotor");
+        extension = hardwareMap.get(DcMotor.class, "extensionMotor");
 
         carousel = hardwareMap.tryGet(Servo.class, "carouselServo");
         cargo = hardwareMap.get(Servo.class, "cargoServo");
+
+        swivel.setMode(Parameters.SWIVEL_MOTOR_MODE);
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+
+//        swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
 //        Call the Robot's common initialization protocol and process
         robotDrive = new RobotDrive(this);

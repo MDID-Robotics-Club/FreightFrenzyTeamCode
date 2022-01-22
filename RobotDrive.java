@@ -71,15 +71,15 @@ public class RobotDrive {
 
     public double[] mecanumDrive(double analogX, double analogY, double analogZ) {
         double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
-        double x = -analogY;
+        double x = analogY;
         double y = analogX;
         double turn  =  analogZ;
 
         // Sets the power for each motor and sets a limit using Range.clip()
-        leftFrontPower = Range.clip(x + y + turn, -1.0, 1.0);
-        leftBackPower = Range.clip(x - y + turn, -1.0, 1.0);
-        rightFrontPower = Range.clip(x - y - turn, -1.0, 1.0) ;
-        rightBackPower = Range.clip(x + y - turn, -1.0, 1.0);
+        leftFrontPower = Range.clip(x - y + turn, -1.0, 1.0);
+        leftBackPower = Range.clip(x + y + turn, -1.0, 1.0);
+        rightFrontPower = Range.clip(x + y - turn, -1.0, 1.0);
+        rightBackPower = Range.clip(x - y - turn, -1.0, 1.0);
 
         double[] mecanumPower = {leftFrontPower, rightFrontPower, leftBackPower, rightBackPower};
 

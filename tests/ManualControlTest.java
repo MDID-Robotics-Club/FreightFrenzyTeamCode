@@ -11,6 +11,11 @@ import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
+/**
+ * OPERATOR MODE that works and is fully function-based. It is simple and effective. More of a back-up direct program that will not fail,
+ * even when the SYSTEM-BASED paradigm used in the 2022 iteration does not work.
+ */
+
 @TeleOp(name="Manual Control", group="Linear Opmode")
 public class ManualControlTest extends LinearOpMode {
 

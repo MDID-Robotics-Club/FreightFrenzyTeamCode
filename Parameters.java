@@ -3,6 +3,9 @@ package org.firstinspires.ftc.teamcode;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 
+/**
+ * Parameters for MDID2 Robot, tuning one will change the operation mode of the system for cases which use the constants
+ */
 public class Parameters {
     public static class Preferences {
 

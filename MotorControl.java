@@ -11,6 +11,19 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.mdidlib.PIDController;
 
+/**
+ * Motor Control System that controls any control of motors that is not controlled by the Drivetrain.
+ * For 2022 Freight Frenzy, this includes
+ * DC MOTORS
+ * 1. Extension Motor (for the Arm)
+ * 2. Lift Motor (for the Arm)
+ * 3. Swivel Motor, used for "swiveling" the entire intake and deploy system around.
+ * 4. Intake Motor, used for sweeping in the cargo elements.
+ *
+ * SERVO MOTORS
+ * 1. Cargo Motor, which allows the loading and deployment of cargo elements.
+ * 2. Carousel Motor, which spins the carousel spinner to drop a Team Marker or Ducks
+ */
 public class MotorControl {
     Robot drivenRobot;
 
@@ -68,20 +81,6 @@ public class MotorControl {
     }
 
     public void intakeDrive() {
-//        int swivelPosition = swivelMotor.getCurrentPosition();
-//        allowIntake = true;
-//        if (swivelPosition < 30 || swivelPosition > -30) {
-//            allowIntake = true;
-//        } else {
-//            allowIntake = false;
-//        }
-//
-//        if (allowIntake) {
-//            // May want to control with PID Controller....
-//            intakeMotor.setPower(1.0);
-//        } else {
-//            intakeMotor.setPower(0);
-//        ]
         drivenRobot.intake.setPower(1.0);
     }
 
@@ -176,7 +175,7 @@ public class MotorControl {
         liftPosition += Position;
         drivenRobot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         drivenRobot.lift.setTargetPosition(Position);
-        drivenRobot.lift.setPower(1.0)
+        drivenRobot.lift.setPower(1.0);
         while (drivenRobot.lift.isBusy()) {
             liftIsBusy = true;
         }
@@ -190,7 +189,7 @@ public class MotorControl {
         liftPosition -= Position;
         drivenRobot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         drivenRobot.lift.setTargetPosition(Position);
-        drivenRobot.lift.setPower(-1.0)
+        drivenRobot.lift.setPower(-1.0);
         while (drivenRobot.lift.isBusy()) {
             liftIsBusy = true;
         }

@@ -11,7 +11,11 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import com.acmerobotics.dashboard.FtcDashboard;
 
 /**
- * Operator Mode Controller Program.
+ * Operator Mode Controller Program. Uses the Systems-Based approach that allows a declarative flow to be made.
+ * For example, you can write manualCargo(int Position) to set the position of the Cargo Servo to a certain position
+ * If you want, you can write raiseLift() or lowerLift()
+ *
+ * Debugging becomes easy when there are individual functions that are labeled in different systems.
  */
 
 @TeleOp(name="TeleOp", group="TeleOp")
@@ -31,6 +35,7 @@ public class FtcTeleOp extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        // Gets Dashboard for easy debugging, disable during competition use.
         dashboard = FtcDashboard.getInstance();
         telemetry = dashboard.getTelemetry();
 

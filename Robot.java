@@ -5,6 +5,11 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+
+/**
+ * Robot-Class System that simulates the mapping and configuration of the MDID2 Robot based on OOP declarative paradigm
+ * To use, initialize with which RunMode, DriveMode, and hardwareMap the robot is in, or is using
+ */
 public class Robot {
     public static String TEAM_NAME = "Mingdao";
 

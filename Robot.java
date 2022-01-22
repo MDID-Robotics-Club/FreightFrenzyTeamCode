@@ -52,6 +52,8 @@ public class Robot {
         carousel = hardwareMap.tryGet(Servo.class, "carouselServo");
         cargo = hardwareMap.get(Servo.class, "cargoServo");
 
+        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
         lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
@@ -59,7 +61,7 @@ public class Robot {
         lift.setMode(Parameters.LIFT_MOTOR_MODE);
         extension.setMode(Parameters.EXTENSION_MOTOR_MODE);
         swivel.setMode(Parameters.SWIVEL_MOTOR_MODE);
-        intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+
 
 //        swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
@@ -85,7 +87,6 @@ public class Robot {
             return -1.0;
         }
         return 0.0;
-
     }
 
     /**
@@ -94,6 +95,7 @@ public class Robot {
 
     public void initVision(Parameters.RunMode runMode) {
         // Setting Up Vision for Robot
+
     }
 
     public boolean getCargoStatus() {

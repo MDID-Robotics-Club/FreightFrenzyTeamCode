@@ -6,6 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Gamepad;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.mdidlib.PIDController;
@@ -36,9 +37,11 @@ public class MotorControl {
     private double cargoLoaderPosition = 0;
 
 
-    PIDController liftPID = new PIDController(0.03, 0, 0);
+    PIDController liftPID = new PIDController(0.004, 0, 0.00005);
     PIDController extensionPID = new PIDController(0.0004, 0, 0);
-    PIDController swivelPID = new PIDController(0.003, 0, 0);
+    PIDController swivelPID = new PIDController(0.0004, 0, 0.00005);
+
+    // INTIALIZATION
 
     public MotorControl(Robot robot) {
         drivenRobot = robot;
@@ -49,9 +52,16 @@ public class MotorControl {
         robot.cargo.setPosition(cargoLoaderPosition);
     }
 
-    public void swivelDrive(double Power) {
-        // Method defined in Tested Operator Mode
-        allowIntake = false;
+
+    // INTAKE CONTROL
+    public void autoIntake(Gamepad gamepad) {
+        if (gamepad.right_trigger > 0) {
+            intakeDrive();
+        } else if (gamepad.left_trigger > 0) {
+            intakeReverse();
+        } else {
+            intakePause();
+        }
     }
 
     public void intakeDrive() {
@@ -72,42 +82,50 @@ public class MotorControl {
         drivenRobot.intake.setPower(1.0);
     }
 
+    public void intakeDriveForTime(double timeoutS) {
+        ElapsedTime runtime = new ElapsedTime();
+        while (runtime.seconds() < timeoutS) {
+            intakeDrive();
+        }
+        intakePause();
+    }
+
+    public void intakeReverse() {
+        drivenRobot.intake.setPower(-1.0);
+    }
+
     public void intakePause() { drivenRobot.intake.setPower(0.0); }
 
     // SWIVEL PLATE CONTROL
 
     public int autoSwivel(Gamepad operatorGamepad) {
         // If the Operator intends to turn the swivel
-        if (operatorGamepad.left_stick_x > 0.2 || operatorGamepad.left_stick_x < -0.2) {
-            // Conditioning Left or Right Turn
+        if (operatorGamepad.left_stick_x > 0) {
+            // If the current position is more than the locked position, the lock it at the bottom-line position
+            if (drivenRobot.swivel.getCurrentPosition() > maxSwivelPosition) {
+                drivenRobot.swivel.setPower(0);
+            } else {
+                // Otherwise give it power as intended
+                drivenRobot.swivel.setPower(1.0);
+            }
+            swivelPosition = drivenRobot.swivel.getCurrentPosition();
+            drivenRobot.lift.setPower(-liftPID.update(liftPosition, drivenRobot.lift.getCurrentPosition()));
+            // Left Condition
+        } else if (operatorGamepad.left_stick_x < 0) {
+            // If the current position is more than the locked position, the lock it at the bottom-line position
 
-            // Right Condition
-            if (operatorGamepad.left_stick_x > 0) {
-                // If the current position is more than the locked position, the lock it at the bottom-line position
-               if (drivenRobot.swivel.getCurrentPosition() > minSwivelPosition) {
-                    drivenRobot.swivel.setPower(0);
-                } else {
-                    // Otherwise give it power as intended
-                    drivenRobot.swivel.setPower(0.8);
-                }
-                swivelPosition = drivenRobot.swivel.getCurrentPosition();
-
-                // Left Condition
-            } else if (operatorGamepad.left_stick_x < 0) {
-                // If the current position is more than the locked position, the lock it at the bottom-line position
-
-                if (drivenRobot.swivel.getCurrentPosition() < minSwivelPosition) {
-                    drivenRobot.swivel.setPower(0);
-                } else {
-                    // Otherwise give it power as intended
-                    drivenRobot.swivel.setPower(-0.8);
-                }
-
-                swivelPosition = drivenRobot.swivel.getCurrentPosition();
+            if (drivenRobot.swivel.getCurrentPosition() < minSwivelPosition) {
+                drivenRobot.swivel.setPower(0);
+            } else {
+                // Otherwise give it power as intended
+                drivenRobot.swivel.setPower(-1.0);
             }
 
-            // Press X Button to reset, controlled using swivelLock Controller
-        } else if (operatorGamepad.x) {
+            swivelPosition = drivenRobot.swivel.getCurrentPosition();
+            drivenRobot.lift.setPower(-liftPID.update(liftPosition, drivenRobot.lift.getCurrentPosition()));
+        }
+            // Press X Button to reset, controlled using PID Controller Controller
+        else if (operatorGamepad.x) {
             swivelPosition = 0;
             drivenRobot.swivel.setPower(swivelPID.update(swivelPosition, drivenRobot.swivel.getCurrentPosition()));
         } else {
@@ -116,8 +134,12 @@ public class MotorControl {
         return swivelPosition;
     }
 
+    public void manualSwivel(int position) {
+
+    }
+
     // ARM RAISE/LOWER CONTROL
-    public double autoArm(Gamepad gamepad) {
+    public double autoLift(Gamepad gamepad) {
         if (gamepad.dpad_down){
             liftPosition = drivenRobot.lift.getCurrentPosition();
             if(drivenRobot.lift.getCurrentPosition() < -2500){
@@ -133,12 +155,16 @@ public class MotorControl {
                 drivenRobot.lift.setPower(-0.8);
             }
         } else {
-            drivenRobot.lift.setPower(-(liftPosition - drivenRobot.lift.getCurrentPosition()) * 0.004);
+            drivenRobot.lift.setPower(-liftPID.update(liftPosition, drivenRobot.lift.getCurrentPosition()));
         }
         return drivenRobot.lift.getPower();
     }
 
-    public double holdArm() {
+    public void raiseLift() {}
+
+    public void lowerLift() {}
+
+    public double holdLift() {
         drivenRobot.lift.setPower(-liftPID.pUpdate(liftPosition, drivenRobot.lift.getCurrentPosition()));
         return drivenRobot.lift.getPower();
     }
@@ -173,10 +199,10 @@ public class MotorControl {
     // ARM EXTENSION CONTROL
     public int autoExtension(Gamepad gamepad) {
         if (gamepad.right_trigger > 0) {
-            drivenRobot.extension.setPower(0.3);
+            drivenRobot.extension.setPower(1.0);
             extensionPosition = drivenRobot.extension.getCurrentPosition();
         } else if (gamepad.left_trigger > 0) {
-            drivenRobot.extension.setPower(-0.3);
+            drivenRobot.extension.setPower(-1.0);
             extensionPosition = drivenRobot.extension.getCurrentPosition();
         } else {
             drivenRobot.extension.setPower(extensionPID.update(extensionPosition, drivenRobot.extension.getCurrentPosition()));
@@ -227,19 +253,13 @@ public class MotorControl {
 
     // CARGO SERVO RELATED OPERATIONS
 
-    public void autoCargoControl(Gamepad gamepad) {
-        extensionIsBusy = drivenRobot.extension.isBusy() || drivenRobot.extension.getPower() > 0.05 || extensionPosition > minExtensionPosition + 10;
-        if (!(gamepad.right_bumper && gamepad.left_bumper)) {
-            if (extensionIsBusy) {
-                if (gamepad.b) {
-                    dropCargo();
-                } else if (gamepad.a) {
-                    defaultCargo();
-                }
-            } else {
-                loadCargo();
-            }
+    public void autoCargo(Gamepad gamepad) {
+        if (gamepad.right_bumper) {
+            cargoLoaderPosition += 0.1;
+        } else if (gamepad.left_bumper) {
+            cargoLoaderPosition -= 0.1;
         }
+        drivenRobot.cargo.setPosition(Range.clip(cargoLoaderPosition, -1.0, 1.0));
     }
 
     public void dropCargo() {
@@ -264,15 +284,6 @@ public class MotorControl {
         drivenRobot.cargo.setPosition(cargoLoaderPosition);
     }
 
-    public void manualCargoControl(Gamepad gamepad) {
-        if (gamepad.a) {
-            cargoLoaderPosition -= 0.2;
-        }
-        if (gamepad.b) {
-            cargoLoaderPosition += 0.2;
-        }
-        drivenRobot.cargo.setPosition(Range.clip(cargoLoaderPosition, -1.0, 1.0));
-    }
 
     // CARAOUSEL CONTROL
 
@@ -282,5 +293,16 @@ public class MotorControl {
         carouselPosition += changeInPosition;
 
         drivenRobot.carousel.setPosition(carouselPosition);
+    }
+
+    // TEAM MARK CONTROL
+    public void teamMarkerLoad() {
+        cargoLoaderPosition = -1.0;
+        drivenRobot.cargo.setPosition(cargoLoaderPosition);
+    }
+
+    public void teamMarkerUnload() {
+        cargoLoaderPosition = 1.0;
+        drivenRobot.cargo.setPosition(cargoLoaderPosition);
     }
 }

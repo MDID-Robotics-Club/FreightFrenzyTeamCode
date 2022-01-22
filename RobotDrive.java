@@ -41,10 +41,10 @@ public class RobotDrive {
     int RFState;
     int RBState;
 
-    PIDController LFPID = new PIDController(0.05, 0, 0);
-    PIDController LBPID = new PIDController(0.05, 0, 0);
-    PIDController RFPID = new PIDController(0.05, 0, 0);
-    PIDController RBPID = new PIDController(0.05, 0, 0);
+    PIDController LFPID = new PIDController(0.0005, 0, 0);
+    PIDController LBPID = new PIDController(0.0005, 0, 0);
+    PIDController RFPID = new PIDController(0.0005, 0, 0);
+    PIDController RBPID = new PIDController(0.0005, 0, 0);
 
     boolean driveIsBusy;
 
@@ -116,24 +116,82 @@ public class RobotDrive {
 
         if (verticalTranslation != 0 && horizontalTranslation != 0) {
 
+            newLFTarget = (x) * Parameters.ENCODER_PPR_PER_METER;
+            newLBTarget = (x) * Parameters.ENCODER_PPR_PER_METER;
+            newRFTarget = (x) * Parameters.ENCODER_PPR_PER_METER;
+            newRBTarget = (x) * Parameters.ENCODER_PPR_PER_METER;
+
+            LF.setTargetPosition((int)newLFTarget);
+            LB.setTargetPosition((int)newLBTarget);
+            RF.setTargetPosition((int)newRFTarget);
+            RB.setTargetPosition((int)newRBTarget);
+
+            driveIsBusy = LF.isBusy() || LB.isBusy() || RF.isBusy() || RB.isBusy();
+            while (driveIsBusy) {
+                LF.setPower(LFPID.update(newLFTarget, LF.getCurrentPosition()));
+                LB.setPower(LBPID.update(newLBTarget, LB.getCurrentPosition()));
+                RF.setPower(RFPID.update(newRFTarget, RF.getCurrentPosition()));
+                RB.setPower(RBPID.update(newRBTarget, RB.getCurrentPosition()));
+            }
+            LF.setPower(0);
+            LB.setPower(0);
+            RF.setPower(0);
+            RB.setPower(0);
+
+            newLFTarget = (y) * Parameters.ENCODER_PPR_PER_METER;
+            newLBTarget = (-y) * Parameters.ENCODER_PPR_PER_METER;
+            newRFTarget = (-y) * Parameters.ENCODER_PPR_PER_METER;
+            newRBTarget = (y) * Parameters.ENCODER_PPR_PER_METER;
+
+            LF.setTargetPosition((int)newLFTarget);
+            LB.setTargetPosition((int)newLBTarget);
+            RF.setTargetPosition((int)newRFTarget);
+            RB.setTargetPosition((int)newRBTarget);
+
+            driveIsBusy = LF.isBusy() || LB.isBusy() || RF.isBusy() || RB.isBusy();
+            while (driveIsBusy) {
+                LF.setPower(LFPID.update(newLFTarget, LF.getCurrentPosition()));
+                LB.setPower(LBPID.update(newLBTarget, LB.getCurrentPosition()));
+                RF.setPower(RFPID.update(newRFTarget, RF.getCurrentPosition()));
+                RB.setPower(RBPID.update(newRBTarget, RB.getCurrentPosition()));
+            }
+            LF.setPower(0);
+            LB.setPower(0);
+            RF.setPower(0);
+            RB.setPower(0);
+
         } else {
             newLFTarget = (x + y) * Parameters.ENCODER_PPR_PER_METER;
             newLBTarget = (x - y) * Parameters.ENCODER_PPR_PER_METER;
             newRFTarget = (x - y) * Parameters.ENCODER_PPR_PER_METER;
             newRBTarget = (x + y) * Parameters.ENCODER_PPR_PER_METER;
-        }
 
-        driveIsBusy = LF.isBusy() || LB.isBusy() || RF.isBusy() || RB.isBusy();
-        while (driveIsBusy) {
-            LF.setPower(LFPID.update(newLFTarget, LF.getCurrentPosition()));
-            LB.setPower(LBPID.update(newLBTarget, LB.getCurrentPosition()));
-            RF.setPower(RFPID.update(newRFTarget, RF.getCurrentPosition()));
-            RB.setPower(RBPID.update(newRBTarget, RB.getCurrentPosition()));
+            LF.setTargetPosition((int)newLFTarget);
+            LB.setTargetPosition((int)newLBTarget);
+            RF.setTargetPosition((int)newRFTarget);
+            RB.setTargetPosition((int)newRBTarget);
+
+            driveIsBusy = LF.isBusy() || LB.isBusy() || RF.isBusy() || RB.isBusy();
+            while (driveIsBusy) {
+                LF.setPower(LFPID.update(newLFTarget, LF.getCurrentPosition()));
+                LB.setPower(LBPID.update(newLBTarget, LB.getCurrentPosition()));
+                RF.setPower(RFPID.update(newRFTarget, RF.getCurrentPosition()));
+                RB.setPower(RBPID.update(newRBTarget, RB.getCurrentPosition()));
+            }
+            LF.setPower(0);
+            LB.setPower(0);
+            RF.setPower(0);
+            RB.setPower(0);
         }
-        LF.setPower(0);
-        LB.setPower(0);
-        RF.setPower(0);
-        RB.setPower(0);
+    }
+
+    public void diagnalDrive(int x, int y, int pulses) {
+        boolean forward = Range.clip(x, -1.0, 1.0) > 0;
+        boolean right = Range.clip(y, -1.0, 1.0) > 0;
+
+        if (forward) {
+
+        }
     }
 
     /**

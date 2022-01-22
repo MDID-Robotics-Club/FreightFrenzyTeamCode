@@ -25,27 +25,8 @@ public class FtcTeleOp extends LinearOpMode {
     // Declare OpMode members.
     private ElapsedTime runtime = new ElapsedTime();
 
-    public DcMotor Swivel;
-
     protected Gamepad driverGamepad;
     protected Gamepad operatorGamepad;
-
-    private double drivePowerScale = 1.0;
-    private double swivelPowerScale = 0.8;
-    private double armPowerScale = 1.0;
-
-    double extensionPosition = 0;
-
-    public int swivelPosition = 0;
-
-    DcMotor Extension;
-    DcMotor Intake;
-
-    static final double SWIVEL_P = 0.00006;
-
-    double chassisPower;
-
-    private int extensionPower;
 //    FtcDashboard dashboard;
 
     @Override
@@ -66,9 +47,6 @@ public class FtcTeleOp extends LinearOpMode {
         // to 'get' must correspond to the names assigned during the robot configuration
         // step (using the FTC Robot Controller app on the phone).
 
-        // Getting Motors
-        Intake = hardwareMap.get(DcMotor.class, "intakeMotor");
-
         // Getting Gamepad from Phone
         driverGamepad = gamepad1;
         operatorGamepad = gamepad2;
@@ -86,26 +64,26 @@ public class FtcTeleOp extends LinearOpMode {
 
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
+            // DRIVE TELEOP
             double[] drivePower = robot.robotDrive.mecanumDrive(driverGamepad.left_stick_x, driverGamepad.left_stick_y, driverGamepad.right_stick_x);
 
-            if (driverGamepad.right_trigger > 0 || driverGamepad.left_trigger > 0) {
-                robot.motorControl.intakeDrive();
-            } else {
-                robot.motorControl.intakePause();
-            }
+            // INTAKE TELEOP
+            robot.motorControl.autoIntake(driverGamepad);
 
-            extensionPower = robot.motorControl.autoExtension(operatorGamepad);
+            // EXTENSION TELEOP
+            robot.motorControl.autoExtension(operatorGamepad);
+
+            // SWIVEL TELEOP
             robot.motorControl.autoSwivel(operatorGamepad);
-            double holdArmPID = robot.motorControl.holdArm();
-            if (operatorGamepad.dpad_up) {
-                robot.motorControl.liftMotor.setPower(0.4);
-            } else if (operatorGamepad.dpad_down) {
-                robot.motorControl.liftMotor.setPower(-0.4);
-            } else {
-                robot.motorControl.liftMotor.setPower(0);
-            }
 
-            robot.motorControl.cargoMotor.setPosition(0.4);
+            // LIFT TELEOP
+            robot.motorControl.autoLift(operatorGamepad);
+
+            // CARGO SERVO TELEOP
+            robot.motorControl.autoCargo(operatorGamepad);
+
+            // CAROUSEL SERVO TELEOP
+
 
 //            robot.motorControl.raiseArm(operatorGamepad.dpad_up);
 //            robot.motorControl.lowerArm(operatorGamepad.dpad_down);
@@ -127,12 +105,19 @@ public class FtcTeleOp extends LinearOpMode {
             telemetry.addData("Status", "Run Time: " + runtime.toString());
             telemetry.addData("Mecanum Drive Power Output", "LeftFront: %.2f LeftBack: %.2f RightFront: %.2f RightBack: %.2f",
                     drivePower[0], drivePower[1], drivePower[2], drivePower[3]);
-            telemetry.addData("operatorGamepad Output", "RJS-X: %.2f RJS-Y: %.2f, LJS-X: %.2f", operatorGamepad.right_stick_x, operatorGamepad.right_stick_y, operatorGamepad.left_stick_x);
-            telemetry.addData("Extension Motor Rotated:", "%d", extensionPower);
+
+            telemetry.addData("driverGamepad Output", "RJS-X: %.2f RJS-Y: %.2f, LJS-X: %.2f, LJS-Y: %.2f", driverGamepad.right_stick_x, driverGamepad.right_stick_y, driverGamepad.left_stick_x, driverGamepad.left_stick_y);
+            telemetry.addData("operatorGamepad Output", "RJS-X: %.2f RJS-Y: %.2f, LJS-X: %.2f, LJS-Y: %.2f", operatorGamepad.right_stick_x, operatorGamepad.right_stick_y, operatorGamepad.left_stick_x, driverGamepad.left_stick_y);
+
+            telemetry.addData("Extension Motor Rotated:", "%f", robot.extension.getPower());
             telemetry.addData("Extension Position:", "%d", robot.extension.getCurrentPosition());
-            telemetry.addData("Hold Arm Power", "%f", holdArmPID);
-            telemetry.addData("Swivel Position:", "%d", swivelPosition);
+
+            telemetry.addData("Lift Position:", "%d", robot.lift.getCurrentPosition());
+            telemetry.addData("Lift Power", "%f", robot.lift.getPower());
+
+            telemetry.addData("Swivel Position:", "%d", robot.swivel.getCurrentPosition());
             telemetry.addData("Swivel Power:", "%f", robot.swivel.getPower());
+
             telemetry.addData("Intake Drive:", "%f", robot.intake.getPower());
             telemetry.update();
         }

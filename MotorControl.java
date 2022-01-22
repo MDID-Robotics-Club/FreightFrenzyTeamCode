@@ -57,10 +57,13 @@ public class MotorControl {
     public void autoIntake(Gamepad gamepad) {
         if (gamepad.right_trigger > 0) {
             intakeDrive();
+            intakeIsBusy = true;
         } else if (gamepad.left_trigger > 0) {
             intakeReverse();
+            intakeIsBusy = true;
         } else {
             intakePause();
+            intakeIsBusy = false;
         }
     }
 
@@ -83,11 +86,13 @@ public class MotorControl {
     }
 
     public void intakeDriveForTime(double timeoutS) {
-        ElapsedTime runtime = new ElapsedTime();
-        while (runtime.seconds() < timeoutS) {
+        ElapsedTime intakeRuntime = new ElapsedTime();
+        while (intakeRuntime.seconds() < timeoutS) {
             intakeDrive();
+            intakeIsBusy = true;
         }
         intakePause();
+        intakeRuntime.reset();
     }
 
     public void intakeReverse() {
@@ -101,6 +106,7 @@ public class MotorControl {
     public int autoSwivel(Gamepad operatorGamepad) {
         // If the Operator intends to turn the swivel
         if (operatorGamepad.left_stick_x > 0) {
+            swivelIsBusy = true;
             // If the current position is more than the locked position, the lock it at the bottom-line position
             if (drivenRobot.swivel.getCurrentPosition() > maxSwivelPosition) {
                 drivenRobot.swivel.setPower(0);
@@ -112,8 +118,8 @@ public class MotorControl {
             drivenRobot.lift.setPower(-liftPID.update(liftPosition, drivenRobot.lift.getCurrentPosition()));
             // Left Condition
         } else if (operatorGamepad.left_stick_x < 0) {
+            swivelIsBusy = true;
             // If the current position is more than the locked position, the lock it at the bottom-line position
-
             if (drivenRobot.swivel.getCurrentPosition() < minSwivelPosition) {
                 drivenRobot.swivel.setPower(0);
             } else {
@@ -126,9 +132,11 @@ public class MotorControl {
         }
             // Press X Button to reset, controlled using PID Controller Controller
         else if (operatorGamepad.x) {
+            swivelIsBusy = true;
             swivelPosition = 0;
             drivenRobot.swivel.setPower(swivelPID.update(swivelPosition, drivenRobot.swivel.getCurrentPosition()));
         } else {
+            swivelIsBusy = false;
             drivenRobot.swivel.setPower(swivelPID.update(swivelPosition, drivenRobot.swivel.getCurrentPosition()));
         }
         return swivelPosition;
@@ -141,6 +149,7 @@ public class MotorControl {
     // ARM RAISE/LOWER CONTROL
     public double autoLift(Gamepad gamepad) {
         if (gamepad.dpad_down){
+            liftIsBusy = true;
             liftPosition = drivenRobot.lift.getCurrentPosition();
             if(drivenRobot.lift.getCurrentPosition() < -2500){
                 drivenRobot.lift.setPower(0);
@@ -148,6 +157,7 @@ public class MotorControl {
                 drivenRobot.lift.setPower(0.8);
             }
         } else if (gamepad.dpad_up){
+            liftIsBusy = true;
             liftPosition = drivenRobot.lift.getCurrentPosition();
             if(drivenRobot.lift.getCurrentPosition() > 2500){
                 drivenRobot.lift.setPower(0);
@@ -155,56 +165,60 @@ public class MotorControl {
                 drivenRobot.lift.setPower(-0.8);
             }
         } else {
+            liftIsBusy = false;
             drivenRobot.lift.setPower(-liftPID.update(liftPosition, drivenRobot.lift.getCurrentPosition()));
         }
         return drivenRobot.lift.getPower();
     }
 
-    public void raiseLift() {}
+    public void raiseLift(int Position) {
+        drivenRobot.lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftPosition += Position;
+        drivenRobot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drivenRobot.lift.setTargetPosition(Position);
+        drivenRobot.lift.setPower(1.0)
+        while (drivenRobot.lift.isBusy()) {
+            liftIsBusy = true;
+        }
+        drivenRobot.lift.setPower(0);
+        liftIsBusy = false;
+        drivenRobot.lift.setMode(Parameters.LIFT_MOTOR_MODE);
+    }
 
-    public void lowerLift() {}
+    public void lowerLift(int Position) {
+        drivenRobot.lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        liftPosition -= Position;
+        drivenRobot.lift.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        drivenRobot.lift.setTargetPosition(Position);
+        drivenRobot.lift.setPower(-1.0)
+        while (drivenRobot.lift.isBusy()) {
+            liftIsBusy = true;
+        }
+        drivenRobot.lift.setPower(0);
+        liftIsBusy = false;
+        drivenRobot.lift.setMode(Parameters.LIFT_MOTOR_MODE);
+
+    }
 
     public double holdLift() {
         drivenRobot.lift.setPower(-liftPID.pUpdate(liftPosition, drivenRobot.lift.getCurrentPosition()));
+        liftIsBusy = false;
         return drivenRobot.lift.getPower();
     }
 
-//    public void raiseArm(boolean dPad) {
-//        liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//        if (dPad) {
-//            armTargetPosition += 3;
-//            liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//            liftMotor.setTargetPosition(armTargetPosition);
-//            liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//            liftMotor.setPower(1);
-//        }
-//        liftMotor.setPower(0);
-//        // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
-//    }
-
-//    public void lowerArm(boolean dPad) {
-//        if (dPad) {
-//            armTargetPosition -= 3;
-//            liftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-//            liftMotor.setTargetPosition(armTargetPosition);
-//            liftMotor.setMode(DcMotor.RunMode.RUN_TO_POSITION);
-//            liftMotor.setPower(-1);
-//        }
-//        liftMotor.setPower(0);
-//        // Adjusts the motor to the target position, which eliminates potential errors such as gravity.
-//        // Optimization Room: adjusting for cos() because of gravity.
-//    }
-
-
     // ARM EXTENSION CONTROL
+
     public int autoExtension(Gamepad gamepad) {
         if (gamepad.right_trigger > 0) {
+            extensionIsBusy = true;
             drivenRobot.extension.setPower(1.0);
             extensionPosition = drivenRobot.extension.getCurrentPosition();
         } else if (gamepad.left_trigger > 0) {
+            extensionIsBusy = true;
             drivenRobot.extension.setPower(-1.0);
             extensionPosition = drivenRobot.extension.getCurrentPosition();
         } else {
+            extensionIsBusy = false;
             drivenRobot.extension.setPower(extensionPID.update(extensionPosition, drivenRobot.extension.getCurrentPosition()));
         }
 //        extensionMotor.setPower(extensionPID.update(extensionPosition, extensionMotor.getCurrentPosition()));
@@ -224,8 +238,9 @@ public class MotorControl {
             drivenRobot.extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
             drivenRobot.extension.setPower(0.3);
             while (drivenRobot.extension.getCurrentPosition() < Position || drivenRobot.extension.isBusy()) {
-
+                extensionIsBusy = true;
             }
+            extensionIsBusy = false;
             drivenRobot.extension.setPower(0);
             drivenRobot.extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
             extensionPosition = drivenRobot.extension.getCurrentPosition();
@@ -233,6 +248,7 @@ public class MotorControl {
     }
 
     public void retractArm(int Position) {
+        drivenRobot.extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         if (Position > extensionPosition) {
             Position = extensionPosition;
         }
@@ -240,15 +256,16 @@ public class MotorControl {
         drivenRobot.extension.setMode(DcMotor.RunMode.RUN_TO_POSITION);
         drivenRobot.extension.setPower(0.3);
         while (drivenRobot.extension.getCurrentPosition() < Position || drivenRobot.extension.isBusy()) {
-
+            extensionIsBusy = true;
         }
+        extensionIsBusy = false;
         drivenRobot.extension.setPower(0);
-        drivenRobot.extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        drivenRobot.extension.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         extensionPosition = drivenRobot.extension.getCurrentPosition();
     }
 
     public void resetExtensionArm() {
-
+        retractArm(0);
     }
 
     // CARGO SERVO RELATED OPERATIONS
@@ -279,7 +296,7 @@ public class MotorControl {
         drivenRobot.cargo.setPosition(cargoLoaderPosition);
     }
 
-    public void specifyCargo(double Power) {
+    public void manualCargo(double Power) {
         cargoLoaderPosition += Power;
         drivenRobot.cargo.setPosition(cargoLoaderPosition);
     }

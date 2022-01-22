@@ -1,7 +1,6 @@
-package org.firstinspires.ftc.teamcode;
+package org.firstinspires.ftc.teamcode.Robot;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -13,20 +12,20 @@ import com.qualcomm.robotcore.hardware.Servo;
 public class Robot {
     public static String TEAM_NAME = "Mingdao";
 
-    RobotDrive robotDrive;
-    MotorControl motorControl;
+    public RobotDrive robotDrive;
+    public MotorControl motorControl;
 
     DcMotor LF = null;
     DcMotor LB = null;
     DcMotor RF = null;
     DcMotor RB = null;
 
-    DcMotor swivel = null;
-    DcMotor intake = null;
-    DcMotor lift = null;
-    DcMotor extension = null;
-    Servo cargo = null;
-    Servo carousel = null;
+    public DcMotor swivel = null;
+    public DcMotor intake = null;
+    public DcMotor lift = null;
+    public DcMotor extension = null;
+    public Servo cargo = null;
+    public Servo carousel = null;
 
     boolean cargoLoad = false;
 

@@ -44,7 +44,6 @@ public class Robot {
 //        RF.setDirection(DcMotor.Direction.REVERSE);
 //        RB.setDirection(DcMotor.Direction.REVERSE);
 
-
         swivel = hardwareMap.get(DcMotor.class, "swivelMotor");
         intake = hardwareMap.get(DcMotor.class, "intakeMotor");
         lift = hardwareMap.get(DcMotor.class, "liftMotor");
@@ -53,13 +52,14 @@ public class Robot {
         carousel = hardwareMap.tryGet(Servo.class, "carouselServo");
         cargo = hardwareMap.get(Servo.class, "cargoServo");
 
+        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+        swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
+
+        lift.setMode(Parameters.LIFT_MOTOR_MODE);
+        extension.setMode(Parameters.EXTENSION_MOTOR_MODE);
         swivel.setMode(Parameters.SWIVEL_MOTOR_MODE);
         intake.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-
-        lift.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
-        extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
-        extension.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
 //        swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 

@@ -76,7 +76,6 @@ public class ManualControlTest extends LinearOpMode {
         arm_extend.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         arm_angle.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
         turn.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
-        arm_extend.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         box.setPosition(box_default_position);
 

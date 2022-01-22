@@ -64,6 +64,18 @@ public class PIDController {
         return output;
     }
 
+    public double pUpdate(double reference, double state) {
+        double error = reference - state;
+
+        double P = kP * error;
+        double output = P;
+
+        lastError = error;
+        timer.reset();
+
+        return output;
+    }
+
     public double getCurrentIntegral() {
         return integralSum;
     }

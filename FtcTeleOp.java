@@ -96,7 +96,14 @@ public class FtcTeleOp extends LinearOpMode {
 
             extensionPower = robot.motorControl.autoExtension(operatorGamepad);
             robot.motorControl.autoSwivel(operatorGamepad);
-            robot.motorControl.holdArm();
+            double holdArmPID = robot.motorControl.holdArm();
+            if (operatorGamepad.dpad_up) {
+                robot.motorControl.liftMotor.setPower(0.4);
+            } else if (operatorGamepad.dpad_down) {
+                robot.motorControl.liftMotor.setPower(-0.4);
+            } else {
+                robot.motorControl.liftMotor.setPower(0);
+            }
 
             robot.motorControl.cargoMotor.setPosition(0.4);
 
@@ -123,6 +130,7 @@ public class FtcTeleOp extends LinearOpMode {
             telemetry.addData("operatorGamepad Output", "RJS-X: %.2f RJS-Y: %.2f, LJS-X: %.2f", operatorGamepad.right_stick_x, operatorGamepad.right_stick_y, operatorGamepad.left_stick_x);
             telemetry.addData("Extension Motor Rotated:", "%d", extensionPower);
             telemetry.addData("Extension Position:", "%d", robot.extension.getCurrentPosition());
+            telemetry.addData("Hold Arm Power", "%f", holdArmPID);
             telemetry.addData("Swivel Position:", "%d", swivelPosition);
             telemetry.addData("Swivel Power:", "%f", robot.swivel.getPower());
             telemetry.addData("Intake Drive:", "%f", robot.intake.getPower());

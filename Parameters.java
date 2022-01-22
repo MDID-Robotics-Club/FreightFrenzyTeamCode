@@ -29,9 +29,10 @@ public class Parameters {
      * Run Mode
      */
     static final DcMotor.RunMode DRIVE_MOTOR_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
-    static final DcMotorEx.RunMode SWIVEL_MOTOR_MODE = DcMotorEx.RunMode.RUN_WITHOUT_ENCODER;
-    static final DcMotorEx.RunMode INTAKE_MOTOR_MODE = DcMotorEx.RunMode.RUN_WITHOUT_ENCODER;
-    static final DcMotorEx.RunMode EXTENSION_MOTOR_MODE = DcMotorEx.RunMode.RUN_USING_ENCODER;
+    static final DcMotor.RunMode SWIVEL_MOTOR_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+    static final DcMotor.RunMode INTAKE_MOTOR_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+    static final DcMotor.RunMode EXTENSION_MOTOR_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
+    static final DcMotor.RunMode LIFT_MOTOR_MODE = DcMotor.RunMode.RUN_WITHOUT_ENCODER;
 
     /**
      * GOBILDA 5203-0019 Motor Specifications

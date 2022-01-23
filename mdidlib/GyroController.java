@@ -25,10 +25,17 @@ public class GyroController {
     }
 
     public double[] maintainEncoderDriveAngle(double referenceAngle, double stateAngle) {
+        double leftPower = 0;
+        double rightPower = 0;
+        double[] output = {leftPower, rightPower};
+        return output;
 
     }
 
     public double[] turnEncoderTurnToAngle(double referenceAngle, double stateAngle) {
-
+        double leftPower = 0;
+        double rightPower = 0;
+        double[] output = {leftPower, rightPower};
+        return output;
     }
 }

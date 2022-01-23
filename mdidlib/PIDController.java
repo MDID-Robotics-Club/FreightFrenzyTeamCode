@@ -12,7 +12,7 @@ public class PIDController {
     double integralSum = 0;
     double maxIntegral = 0;
 
-    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.MILLISECONDS);
+    ElapsedTime timer = new ElapsedTime(ElapsedTime.Resolution.SECONDS);
     private double lastError = 0;
 
     public PIDController(double p, double i, double d) {

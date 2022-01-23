@@ -70,7 +70,12 @@ public class FtcTeleOp extends LinearOpMode {
         // run until the end of the match (driver presses STOP)
         while (opModeIsActive()) {
             // DRIVE TELEOP
-            double[] drivePower = robot.robotDrive.mecanumDrive(driverGamepad.left_stick_x, driverGamepad.left_stick_y, driverGamepad.right_stick_x);
+            double[] drivePower = robot.robotDrive.mecanumDrive(
+                    driverGamepad.left_stick_x,
+                    driverGamepad.left_stick_y,
+                    driverGamepad.right_stick_x,
+                    (driverGamepad.left_bumper || driverGamepad.right_bumper)
+            );
 
             // INTAKE TELEOP
             robot.motorControl.autoIntake(driverGamepad);
@@ -89,22 +94,6 @@ public class FtcTeleOp extends LinearOpMode {
 
             // CAROUSEL SERVO TELEOP
 
-
-//            robot.motorControl.raiseArm(operatorGamepad.dpad_up);
-//            robot.motorControl.lowerArm(operatorGamepad.dpad_down);
-//
-//            robot.motorControl.extendArm(operatorGamepad.right_trigger);
-//            robot.motorControl.retractArm(operatorGamepad.left_trigger);
-//
-//            if (operatorGamepad.left_bumper || operatorGamepad.right_bumper) {
-//                if (robot.getCargoLoaderStatus() == 1.0) {
-//                    robot.motorControl.dropCargo();
-//                } else if (robot.getCargoLoaderStatus() == -1.0) {
-//                    robot.motorControl.loadCargo();
-//                } else {
-//                    robot.motorControl.manualCargoControl(operatorGamepad);
-//                }
-//            }
 
             // Show the elapsed game time and wheel power.
             telemetry.addData("Status", "Run Time: " + runtime.toString());

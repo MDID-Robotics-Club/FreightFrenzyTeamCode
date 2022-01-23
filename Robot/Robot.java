@@ -15,10 +15,10 @@ public class Robot {
     public RobotDrive robotDrive;
     public MotorControl motorControl;
 
-    DcMotor LF = null;
-    DcMotor LB = null;
-    DcMotor RF = null;
-    DcMotor RB = null;
+    public DcMotor LF = null;
+    public DcMotor LB = null;
+    public DcMotor RF = null;
+    public DcMotor RB = null;
 
     public DcMotor swivel = null;
     public DcMotor intake = null;
@@ -37,14 +37,18 @@ public class Robot {
      */
 
     public Robot(Parameters.RunMode runMode, Parameters.DriveMode driveMode, HardwareMap hardwareMap) {
+
         LF = hardwareMap.tryGet(DcMotor.class, "leftFront");
         LB = hardwareMap.tryGet(DcMotor.class, "leftBack");
         RF = hardwareMap.tryGet(DcMotor.class, "rightFront");
         RB = hardwareMap.tryGet(DcMotor.class, "rightBack");
 
         // Have not yet initiated reverse MOTOR PARAMETER, so using as a temporary placeholder.
-        LF.setDirection(DcMotor.Direction.REVERSE);
-        LB.setDirection(DcMotor.Direction.REVERSE);
+        switch(driveMode) {
+            case MECANUM_DRIVE:
+                LF.setDirection(DcMotor.Direction.REVERSE);
+                LB.setDirection(DcMotor.Direction.REVERSE);
+        }
 //        RF.setDirection(DcMotor.Direction.REVERSE);
 //        RB.setDirection(DcMotor.Direction.REVERSE);
 
@@ -62,9 +66,16 @@ public class Robot {
         extension.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
 
-        lift.setMode(Parameters.LIFT_MOTOR_MODE);
-        extension.setMode(Parameters.EXTENSION_MOTOR_MODE);
-        swivel.setMode(Parameters.SWIVEL_MOTOR_MODE);
+        switch(runMode) {
+            case AUTONOMOUS:
+                lift.setMode(Parameters.LIFT_MOTOR_MODE);
+                extension.setMode(Parameters.EXTENSION_MOTOR_MODE);
+                swivel.setMode(Parameters.SWIVEL_MOTOR_MODE);
+            case TELEOP:
+                lift.setMode(Parameters.LIFT_MOTOR_MODE);
+                extension.setMode(Parameters.EXTENSION_MOTOR_MODE);
+                swivel.setMode(Parameters.SWIVEL_MOTOR_MODE);
+        }
 
 
 //        swivel.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);

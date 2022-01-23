@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.Robot;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.util.ElapsedTime;
 import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.teamcode.Robot.Parameters;
@@ -53,7 +54,7 @@ public class RobotDrive {
         RB.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
     }
 
-    public double[] mecanumDrive(double analogX, double analogY, double analogZ) {
+    public double[] mecanumDrive(double analogX, double analogY, double analogZ, boolean slowDrive) {
         double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
         double x = analogY;
         double y = analogX;
@@ -67,11 +68,102 @@ public class RobotDrive {
 
         double[] mecanumPower = {leftFrontPower, rightFrontPower, leftBackPower, rightBackPower};
 
-        LF.setPower(leftFrontPower);
-        RF.setPower(rightFrontPower);
-        LB.setPower(leftBackPower);
-        RB.setPower(rightBackPower);
+        if (slowDrive) {
+            chassisPower = 0.3;
+        } else {
+            chassisPower = 1.0;
+        }
+
+        LF.setPower(leftFrontPower * chassisPower);
+        RF.setPower(rightFrontPower * chassisPower);
+        LB.setPower(leftBackPower * chassisPower);
+        RB.setPower(rightBackPower * chassisPower);
         return mecanumPower;
+    }
+
+    public double simpleVerticalDrive(double Power) {
+        double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
+        leftFrontPower = Range.clip(Power, -1.0, 1.0);
+        leftBackPower = Range.clip(Power, -1.0, 1.0);
+        rightFrontPower = Range.clip(Power, -1.0, 1.0);
+        rightBackPower = Range.clip(Power, -1.0, 1.0);
+
+        LF.setPower(-leftFrontPower * chassisPower);
+        RF.setPower(rightFrontPower * chassisPower);
+        LB.setPower(leftBackPower * chassisPower);
+        RB.setPower(-rightBackPower * chassisPower);
+        return Power;
+    }
+
+    public double simpleHorizontalDrive(double Power) {
+        double leftFrontPower, rightFrontPower, leftBackPower, rightBackPower;
+        leftFrontPower = Range.clip(Power, -1.0, 1.0);
+        leftBackPower = Range.clip(Power, -1.0, 1.0);
+        rightFrontPower = Range.clip(Power, -1.0, 1.0);
+        rightBackPower = Range.clip(Power, -1.0, 1.0);
+
+        LF.setPower(leftFrontPower * chassisPower);
+        RF.setPower(rightFrontPower * chassisPower);
+        LB.setPower(leftBackPower * chassisPower);
+        RB.setPower(rightBackPower * chassisPower);
+        return Power;
+    }
+
+    public void timeDrive(double timeoutS, double Power) {
+        LF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ElapsedTime runtime = new ElapsedTime();
+        while (runtime.seconds() < timeoutS) {
+            LF.setPower(Range.clip(Power, -1.0, 1.0));
+            LB.setPower(Range.clip(Power, -1.0, 1.0));
+            RF.setPower(Range.clip(Power, -1.0, 1.0));
+            RB.setPower(Range.clip(Power, -1.0, 1.0));
+        }
+        LF.setPower(0);
+        LB.setPower(0);
+        RF.setPower(0);
+        RB.setPower(0);
+    }
+
+    public void timeDiagonalDrive(double timeoutS, double Power, boolean forward, boolean right) {
+        LF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ElapsedTime runtime = new ElapsedTime();
+        while (runtime.seconds() < timeoutS) {
+            if (forward) {
+                if (right) {
+                    LF.setPower(Range.clip(Power, -1.0, 1.0));
+                    LB.setPower(0);
+                    RF.setPower(0);
+                    RB.setPower(Range.clip(Power, -1.0, 1.0));
+                } else {
+                    LF.setPower(0);
+                    LB.setPower(Range.clip(Power, -1.0, 1.0));
+                    RF.setPower(Range.clip(Power, -1.0, 1.0));
+                    RB.setPower(0);
+                }
+            } else {
+                if (right) {
+                    LF.setPower(0);
+                    LB.setPower(-Range.clip(Power, -1.0, 1.0));
+                    RF.setPower(-Range.clip(Power, -1.0, 1.0));
+                    RB.setPower(0);
+                } else {
+                    LF.setPower(-Range.clip(Power, -1.0, 1.0));
+                    LB.setPower(0);
+                    RF.setPower(0);
+                    RB.setPower(-Range.clip(Power, -1.0, 1.0));
+                }
+            }
+        }
+        LF.setPower(0);
+        LB.setPower(0);
+        RF.setPower(0);
+        RB.setPower(0);
     }
 
     public void encoderDrive(double driveSpeed, double verticalTranslation, double horizontalTranslation) {
@@ -169,13 +261,44 @@ public class RobotDrive {
         }
     }
 
-    public void diagnalDrive(int x, int y, int pulses) {
+    public void diagonalEncoderDrive(int x, int y, int pulses) {
         boolean forward = Range.clip(x, -1.0, 1.0) > 0;
         boolean right = Range.clip(y, -1.0, 1.0) > 0;
 
         if (forward) {
+            if (right) {
 
+            }
+            if (!right) {
+
+            }
         }
+        if (!forward) {
+            if (right) {
+
+            }
+            if (!right) {
+
+            }
+        }
+    }
+
+    public void timeTurn(double timeoutS, double Power) {
+        LF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        LB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RF.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        RB.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ElapsedTime runtime = new ElapsedTime();
+        while (runtime.seconds() < timeoutS) {
+            LF.setPower(Range.clip(Power, -1.0, 1.0));
+            LB.setPower(Range.clip(Power, -1.0, 1.0));
+            RF.setPower(-Range.clip(Power, -1.0, 1.0));
+            RB.setPower(-Range.clip(Power, -1.0, 1.0));
+        }
+        LF.setPower(0);
+        LB.setPower(0);
+        RF.setPower(0);
+        RB.setPower(0);
     }
 
     /**

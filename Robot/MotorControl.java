@@ -167,6 +167,17 @@ public class MotorControl {
         return drivenRobot.lift.getPower();
     }
 
+    public double manualLift(double Power) {
+        if (Power != 0) {
+            liftIsBusy = true;
+            drivenRobot.lift.setPower(Power);
+        } else {
+            liftIsBusy = false;
+            drivenRobot.lift.setPower(0.0);
+        }
+        return drivenRobot.lift.getPower();
+    }
+
     public void raiseLift(int Position) {
         drivenRobot.lift.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
         liftPosition += Position;

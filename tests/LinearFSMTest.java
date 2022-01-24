@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.tests;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.util.ElapsedTime;
@@ -21,6 +22,7 @@ import org.firstinspires.ftc.teamcode.tests.FSMAutonomousTest;
  */
 
 @Autonomous(name="Autonomous FSM Linear", group="Auto")
+@Disabled
 public class LinearFSMTest extends LinearOpMode {
     public Robot robot;
     private ElapsedTime runtime = new ElapsedTime();

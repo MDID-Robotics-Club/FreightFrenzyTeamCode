@@ -17,6 +17,7 @@ import com.qualcomm.robotcore.util.Range;
  */
 
 @TeleOp(name="Manual Control", group="Linear Opmode")
+@Disabled
 public class ManualControlTest extends LinearOpMode {
 
     private ElapsedTime runtime = new ElapsedTime();
